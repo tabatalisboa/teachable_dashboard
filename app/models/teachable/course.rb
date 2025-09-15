@@ -19,12 +19,12 @@ module Teachable
     # Build a Course from the API hash (keys as in your JSON)
     def self.from_api(h)
       new(
-        id:           h.fetch("id"),          # fetch raises if missing: required field
-        name:         h["name"],
-        heading:      h["heading"],
-        description:  h["description"],
-        is_published: h["is_published"],
-        image_url:    h["image_url"]
+        id: h.fetch('id'), # fetch raises if missing: required field
+        name: h['name'],
+        heading: h['heading'],
+        description: h['description'],
+        is_published: h['is_published'],
+        image_url: h['image_url']
       )
     end
   end
