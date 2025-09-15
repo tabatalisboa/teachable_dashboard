@@ -1,10 +1,24 @@
 <body>
-    <h1>OlAAA</h1>
+  <div class="container mt-5">
+    <h1>My active courses</h1>
 
-    <% @courses.map do |c| %>
-      <%= c["id"] %>
-    <%end%>
+    <table class="table table-hover mt-4">
+      <thead>
+        <tr>
+          <th scope="col">Course Name</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @courses.each do |course| %>
+          <tr>
+            <td><%= course["name"] %></td>
+            <td><a href="<%= course_path(course["id"]) %>" class="btn btn-secondary">View Students</a></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
 
-    
 </body>
 

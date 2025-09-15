@@ -1,5 +1,27 @@
 <body>
-    <%= @course %>
-    <%= @students %>
+    <div class="container mt-5">
+        <a href="<%= courses_path %>" class="link-secondary">Back to Courses</a>
+        <div>
+            <h1> <%= @course["name"] %> </h1>
+            <h5> <%= @course["heading"] %></h5>
+        </div>
+
+        <table class="table table-hover mt-4">
+            <thead>
+                <tr>
+                    <th scope="col">Student Name</th>
+                    <th scope="col">Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% @students.each do |student| %>
+                    <tr>
+                        <td><%= student["name"] %></td>
+                        <td><%= student["email"] %></td>
+                    </tr>
+                <% end %>
+            </tbody>
+        </table>
+    </div>
 
 </body>
