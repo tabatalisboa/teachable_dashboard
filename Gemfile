@@ -3,10 +3,10 @@
 source 'https://rubygems.org'
 
 ruby '3.3.1'
+gem 'rails', '~> 7.1.5', '>= 7.1.5.2'
 
 gem 'importmap-rails'
 gem 'puma', '>= 5.0'
-gem 'rails', '~> 7.1.5', '>= 7.1.5.2'
 gem 'sprockets-rails'
 gem 'stimulus-rails'
 gem 'turbo-rails'
