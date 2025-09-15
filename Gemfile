@@ -28,6 +28,8 @@ gem 'bootsnap', require: false
 
 group :development, :test do
   gem 'debug', platforms: %i[mri mswin mswin64 mingw x64_mingw]
+  gem 'rspec-rails'
+  gem 'webmock'
 end
 
 group :development do
