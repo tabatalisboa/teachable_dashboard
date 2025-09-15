@@ -4,7 +4,7 @@ class CoursesController < ApplicationController
   before_action :set_client
 
   def index
-    raw = @client.list_courses(published: true) # only published
+    raw = @client.list_courses(published: true)
     @courses = raw['courses'] || []
   rescue StandardError => e
     flash.now[:alert] = "Could not load courses (#{e.message})."
@@ -15,15 +15,12 @@ class CoursesController < ApplicationController
     course_id = params[:id].to_i
     @course = @client.show_course(course_id)['course'] || {}
 
-    # Collect unique user IDs from this course's enrollments
     user_ids = Array(@client.course_enrollments(course_id)['enrollments'])
                .map { |e| e['user_id'] }
                .uniq
 
-    # Build { user_id => user_hash } from *all pages* of /v1/users
     indexed_users = fetch_all_users_indexed
 
-    # Keep only users whose IDs are in this course's enrollments
     @students = user_ids.filter_map { |uid| indexed_users[uid] }
   end
 
