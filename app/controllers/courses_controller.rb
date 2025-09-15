@@ -10,27 +10,21 @@ class CoursesController < ApplicationController
   end
   
   def show
-    # course info (name, heading, etc.)
-    @course = (@client.show_course(params[:id])["course"] || {})
+    course_id = params[:id].to_i
 
-    # enrollments for this course
-    enroll_raw = @client.course_enrollments(params[:id])
-    enrollments = enroll_raw["enrollments"]|| []
-    user_ids = enrollments.map { |u| u["user_id"]}
-    
-    @students = []
-    for u_id in user_ids
-      user_detail = @client.show_user(u_id)
-      user = {
-        name: user_detail["name"],
-        email: user_detail["email"]
-      }
-      user_detail["courses"].each do |course|
-        if course["course_id"] == params[:id].to_i && course["is_active_enrollment"] == true
-          @students << user 
-        end
-      end
-    end
+    # Fetch course details
+    @course = @client.show_course(course_id)["course"] || {}
+
+    # Collect unique user IDs from enrollments
+    enrollments = Array(@client.course_enrollments(course_id)["enrollments"])
+    user_ids = enrollments.map { |e| e["user_id"] }.uniq
+
+    # Build a hash { user_id => user_hash } for fast lookup
+    users_page = @client.list_users
+    indexed_users = (users_page["users"] || []).index_by { |u| u["id"] }
+
+    # Pick only users whose ID appears in enrollments
+    @students = user_ids.filter_map { |user_id| indexed_users[user_id] }
   end
 
   private
