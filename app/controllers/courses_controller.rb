@@ -1,8 +1,8 @@
-# app/controllers/courses_controller.rb
 class CoursesController < ApplicationController
+  before_action :set_client
+
   def index
-    client = Teachable::Client.new
-    raw = client.list_courses(published: true)   # only published
+    raw = @client.list_courses(published: true)   # only published
     @courses = raw["courses"] || []
   rescue => e
     flash.now[:alert] = "Could not load courses (#{e.message})."
@@ -10,35 +10,32 @@ class CoursesController < ApplicationController
   end
   
   def show
-  client = Teachable::Client.new
+    # course info (name, heading, etc.)
+    @course = (@client.show_course(params[:id])["course"] || {})
 
-  # course info (name, heading, etc.)
-  @course = (client.show_course(params[:id])["course"] || {})
-
-  # enrollments for this course
-  enroll_raw = client.course_enrollments(params[:id])
-  enrollments = enroll_raw["enrollments"] || []
-
-  # "Active" rule (simple & API-friendly): completed_at == nil
-  active_user_ids = enrollments
-    .select { |e| e["completed_at"].nil? }
-    .map { |e| e["user_id"] }
-
-  # Build a user index (user_id -> {name, email}) using /v1/users (paginated)
-  user_index = {}
-  page = 1
-  loop do
-    users_raw = client.list_users(page: page, per_page: 50)
-    (users_raw["users"] || []).each do |u|
-      user_index[u["id"]] = { name: u["name"], email: u["email"] }
+    # enrollments for this course
+    enroll_raw = @client.course_enrollments(params[:id])
+    enrollments = enroll_raw["enrollments"]|| []
+    user_ids = enrollments.map { |u| u["user_id"]}
+    
+    @students = []
+    for u_id in user_ids
+      user_detail = @client.show_user(u_id)
+      user = {
+        name: user_detail["name"],
+        email: user_detail["email"]
+      }
+      user_detail["courses"].each do |course|
+        if course["course_id"] == params[:id].to_i && course["is_active_enrollment"] == true
+          @students << user 
+        end
+      end
     end
-    break if page >= (users_raw.dig("meta", "number_of_pages") || 1)
-    page += 1
   end
 
-  # Map active user_ids to student rows
-    @students = active_user_ids.map { |uid| user_index[uid] }.compact
-  rescue => e
-    redirect_to(root_path, alert: "Could not load course ##{params[:id]} (#{e.message}).")
+  private
+
+  def set_client
+    @client = Teachable::Client.new
   end
 end
