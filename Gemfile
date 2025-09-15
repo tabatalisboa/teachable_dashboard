@@ -39,10 +39,13 @@ gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 gem "faraday"
 gem "dotenv-rails"
 gem "faraday_middleware"
-gem 'concurrent-ruby' 
-# gem 'faraday-retry' 
-# gem 'faraday-http-cache' 
+gem 'concurrent-ruby'
+# gem 'faraday-retry'
+# gem 'faraday-http-cache'
 # gem 'redis-activesupport'
+
+gem "bootstrap", "~> 5.3", ">= 5.3.3"
+gem "sassc-rails"   # if you don’t already have it
 
 
 
