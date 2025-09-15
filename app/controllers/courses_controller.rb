@@ -10,21 +10,19 @@ class CoursesController < ApplicationController
   end
   
   def show
-    course_id = params[:id].to_i
+  course_id = params[:id].to_i
+  @course   = @client.show_course(course_id)["course"] || {}
 
-    # Fetch course details
-    @course = @client.show_course(course_id)["course"] || {}
+  # Collect unique user IDs from this course's enrollments
+  user_ids = Array(@client.course_enrollments(course_id)["enrollments"])
+              .map { |e| e["user_id"] }
+              .uniq
 
-    # Collect unique user IDs from enrollments
-    enrollments = Array(@client.course_enrollments(course_id)["enrollments"])
-    user_ids = enrollments.map { |e| e["user_id"] }.uniq
+  # Build { user_id => user_hash } from *all pages* of /v1/users
+  indexed_users = fetch_all_users_indexed
 
-    # Build a hash { user_id => user_hash } for fast lookup
-    users_page = @client.list_users
-    indexed_users = (users_page["users"] || []).index_by { |u| u["id"] }
-
-    # Pick only users whose ID appears in enrollments
-    @students = user_ids.filter_map { |user_id| indexed_users[user_id] }
+  # Keep only users whose IDs are in this course's enrollments
+  @students = user_ids.filter_map { |uid| indexed_users[uid] }
   end
 
   private
@@ -32,4 +30,21 @@ class CoursesController < ApplicationController
   def set_client
     @client = Teachable::Client.new
   end
+  
+  def fetch_all_users_indexed(per_page: 50)
+    Rails.cache.fetch("teachable:users:index", expires_in: 10.minutes) do
+      page  = 1
+      index = {}
+      loop do
+        resp  = @client.list_users(page: page, per_page: per_page)
+        users = Array(resp["users"])
+        index.merge!(users.index_by { |u| u["id"] })
+        break if page >= (resp.dig("meta", "number_of_pages") || 1)
+        page += 1
+      end
+      index
+    end
+  end
+
+
 end
