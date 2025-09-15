@@ -40,6 +40,13 @@ class Teachable::Client
     get_json("/v1/users/#{id}")
   end
 
+  def show_user_cached(id)
+    Rails.cache.fetch(["teachable_user", id], expires_in: 10.minutes) do
+      show_user(id)
+    end
+  end
+
+
   private  
 
   # Low-level helper that actually performs the HTTP GET

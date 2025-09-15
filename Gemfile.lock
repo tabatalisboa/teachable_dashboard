@@ -277,6 +277,7 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap
+  concurrent-ruby
   debug
   dotenv-rails
   error_highlight (>= 0.4.0)
